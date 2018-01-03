@@ -1,11 +1,12 @@
 #pragma once
 #include "MnistCommon.h"
+#include "BackupInterface.h"
 
-struct MnistNetworkInterface {
+struct IMnistNetwork : public virtual IBackup{
 	virtual void Train(const MnistDataItem& item) = 0;
 	virtual void Train(const MnistDataSet& item) = 0;
 	virtual char Predict(const MnistDataItem& item) = 0;
 	virtual char Predict(const PixelsVector& piexelsVector) = 0;
 	virtual float SucessRate(const MnistDataSet& item) = 0;
-	virtual ~MnistNetworkInterface() = default;
+	virtual ~IMnistNetwork() = default;
 };

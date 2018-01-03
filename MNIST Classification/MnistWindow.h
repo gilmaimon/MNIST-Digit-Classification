@@ -1,10 +1,12 @@
 #pragma once
 #include "SfmlWindow.h"
 #include "MnistCommon.h"
+#include "MnistWindowInterface.h"
 
 const int g_mnistImageSize = 28;
 
-class MnistWindow : public SfmlWindow {
+
+class MnistWindow : public SfmlWindow, public IMnistWindow {
 public:
 	explicit MnistWindow(const float width, const float height, const std::string windowTitle, MnistDataItem item);
 

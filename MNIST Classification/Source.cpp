@@ -7,6 +7,7 @@
 #include "MnistDatasetReader.h"
 #include "MnistNetwork.h"
 #include "DrawableGreyscaleWindow.h"
+#include "MnistDatasetReaderInterface.h"
 
 #define LITTLE_ENDIAN
 #include "ByteOrder.h"
@@ -18,30 +19,19 @@ std::unique_ptr<MnistWindow> CreateMnistTestWindow(const MnistDataItem dataItem 
 	return result;
 }
 
-void DisplayMnistItem(const std::unique_ptr<MnistWindow>& window, const MnistDataItem& mnistDataItem) {
+void DisplayMnistItem(const std::shared_ptr<IMnistWindow> window, const MnistDataItem& mnistDataItem) {
 	window->SetDataItem(mnistDataItem);
 	window->Draw();
 	window->Display();
 }
 
-void LoadTrainingDataAndBackupNetwork(const size_t trainingSamples, const size_t testSamples, const size_t epochs) {
-	const byte_order::EndianessConverter currentConverter(byte_order::ByteOrder_BigEndian);
-	const MnistDatasetReader mnistDatasetReader{ currentConverter };
-
+void LoadTrainingDataAndBackupNetwork(std::shared_ptr<IMnistDatasetReader> mnistDatasetReader, const size_t epochs) {
 	//Load Training Dataset
-	const MnistDataSet trainingDataSet = mnistDatasetReader.ReadFromFiles(
-		g_trainingImagesFilename,
-		g_trainingLablesFilename,
-		trainingSamples
-	);
+	const MnistDataSet trainingDataSet = mnistDatasetReader->ReadTrainingDataset();
 	std::cout << "Loaded Training Dataset" << std::endl;
 
 	//Load Test Dataset
-	const MnistDataSet testDataSet = mnistDatasetReader.ReadFromFiles(
-		g_testgImagesFilename,
-		g_testgLabelsFilename,
-		testSamples
-	);
+	const MnistDataSet testDataSet = mnistDatasetReader->ReadTestDataset();
 	std::cout << "Loaded Test Dataset" << std::endl;
 
 	//Construct Network
@@ -63,40 +53,41 @@ void LoadTrainingDataAndBackupNetwork(const size_t trainingSamples, const size_t
 	}
 }
 
-void LoadNetworkAndPrintSucessRate() {
+void LoadNetworkAndPrintSucessRate(std::shared_ptr<IMnistDatasetReader> mnistDatasetReader) {
 	MnistNetwork network;
 	network.LoadFromFile(g_networkBackupFilename);
 
-	const byte_order::EndianessConverter currentConverter(byte_order::ByteOrder_BigEndian);
-	const MnistDatasetReader mnistDatasetReader{ currentConverter };
-
-	const MnistDataSet testDataSet = mnistDatasetReader.ReadFromFiles(
-		g_testgImagesFilename,
-		g_testgLabelsFilename,
-		-1
-	);
+	const MnistDataSet testDataSet = mnistDatasetReader->ReadTestDataset();
 	std::cout << "Loaded Test Dataset" << std::endl;
 	std::cout << "Sucess Rate: " << network.SucessRate(testDataSet) * 100 << "%" << std::endl;
 
 }
 
 int main() {
-	//LoadTrainingDataAndBackupNetwork(-1, -1, 5);
-	//LoadNetworkAndPrintSucessRate();
+	const byte_order::EndianessConverter currentConverter(byte_order::ByteOrder_BigEndian);
+	std::shared_ptr<IMnistDatasetReader> mnistDatasetReader = std::make_shared<MnistDatasetReader>(
+		g_trainingImagesFilename, g_trainingLablesFilename,
+		g_testgImagesFilename, g_testgLabelsFilename,
+		currentConverter
+	);
+	
 
-	DrawableGreyscaleWindow window;
+	//LoadTrainingDataAndBackupNetwork(mnistDatasetReader, 2);
+	//LoadNetworkAndPrintSucessRate(mnistDatasetReader);
+	
+	std::unique_ptr<IInteractiveDataDrawingWindow> drawingWindow = std::make_unique<DrawableGreyscaleWindow>();
 
-	MnistNetwork network;
-	network.LoadFromFile(g_networkBackupFilename);
+	std::unique_ptr<IMnistNetwork> mnistNetwork = std::make_unique<MnistNetwork>();
+	mnistNetwork->LoadFromFile(g_networkBackupFilename);
 
 	char lastPrediction = '\0';
-	while(window.IsOpen()) {
-		window.HandleEvent();
-		window.Draw();
-		window.Display();
+	while(drawingWindow->IsOpen()) {
+		drawingWindow->HandleEvent();
+		drawingWindow->Draw();
+		drawingWindow->Display();
 
-		const auto pixels = window.FlatternImage();
-		const char newPrediction = network.Predict(pixels);
+		const auto pixels = drawingWindow->FlatternToPixels();
+		const char newPrediction = mnistNetwork->Predict(pixels);
 
 		if(newPrediction != lastPrediction) {
 			lastPrediction = newPrediction;
@@ -104,18 +95,24 @@ int main() {
 		}
 	}
 
+	getchar();
+	return 0;
+
 	/*
+	
+	auto testDataset = mnistDatasetReader->ReadTestDataset();
+	std::shared_ptr<IMnistWindow> window = CreateMnistTestWindow();
+
 	for (auto i = 0; i < 50; i++) {
-		for (const auto& item : testDataSet.trainDataItems) {
+		for (const auto& item : testDataset.trainDataItems) {
 			DisplayMnistItem(window, item);
-			const char predicted = network.Predict(item);
+			const char predicted = mnistNetwork->Predict(item);
 
 			std::cout << "Predicted: " << predicted << std::endl;
 			getchar();
 		}
 	}
+
 	*/
 
-	getchar();
-	return 0;
 }

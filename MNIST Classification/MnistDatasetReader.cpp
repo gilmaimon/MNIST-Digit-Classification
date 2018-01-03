@@ -26,7 +26,13 @@ MnistDataSet MnistDatasetReader::ReadFromFiles(const std::string imagesFilename,
 	return resultDataSet;
 }
 
-MnistDatasetReader::MnistDatasetReader(const byte_order::EndianessConverter& converter): m_converter(converter) {}
+MnistDatasetReader::MnistDatasetReader(const std::string trainingImagesFilename, const std::string trainingLabelsFilename,
+	const std::string testImagesFilename, const std::string testLabelsFilename, const byte_order::EndianessConverter& converter) 
+	: m_converter(converter), m_trainingImagesFilename(trainingImagesFilename),
+	m_testImagesFilename(testImagesFilename), m_trainingLabelsFilename(g_trainingLablesFilename),
+	m_testLabelsFilename(testLabelsFilename) {
+
+}
 
 std::vector<PixelsVector> MnistDatasetReader::ReadImagesFile(std::istream& imagesInputFile,
                                                              const byte_order::EndianessConverter& currentConverter,
@@ -67,4 +73,12 @@ std::vector<Label> MnistDatasetReader::ReadLabelsFile(std::istream& labelsInputF
 	}
 
 	return allLabels;
+}
+
+MnistDataSet MnistDatasetReader::ReadTrainingDataset() {
+	return ReadFromFiles(m_trainingImagesFilename, m_trainingLabelsFilename, ReadAllFiles);
+}
+
+MnistDataSet MnistDatasetReader::ReadTestDataset() {
+	return ReadFromFiles(m_testImagesFilename, m_testLabelsFilename, ReadAllFiles);
 }

@@ -4,8 +4,6 @@
 #include <cstdint>
 
 namespace byte_order {
-
-	
 	enum ByteOrder {
 		ByteOrder_LittleEndian,
 		ByteOrder_BigEndian

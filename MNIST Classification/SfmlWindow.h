@@ -4,7 +4,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-class SfmlWindow : public Window {
+class SfmlWindow : public virtual IWindow {
 public:
 	explicit SfmlWindow(const size_t width, const size_t height, const std::string windowTitle);
 

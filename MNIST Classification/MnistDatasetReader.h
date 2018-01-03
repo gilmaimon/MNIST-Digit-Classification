@@ -2,14 +2,23 @@
 #include "MnistCommon.h"
 #include <fstream>
 #include <cassert>
+#include "MnistDatasetReaderInterface.h"
 
-class MnistDatasetReader {
+class MnistDatasetReader : public IMnistDatasetReader {
 public:
-	explicit MnistDatasetReader(const byte_order::EndianessConverter& converter);
+	explicit MnistDatasetReader(const std::string trainingImagesFilename, const std::string trainingLabelsFilename,
+		const std::string testImagesFilename, const std::string testLabelsFilename, const byte_order::EndianessConverter& converter);
+	
+	virtual MnistDataSet ReadTrainingDataset() final override;
+	virtual MnistDataSet ReadTestDataset() final override;
 
-	MnistDataSet ReadFromFiles(const std::string imagesFilename, const std::string labelsFilename, const int numToRead) const;
 private:
 	byte_order::EndianessConverter m_converter;
+	static const int ReadAllFiles = -1;
+
+	MnistDataSet ReadFromFiles(const std::string imagesFilename, const std::string labelsFilename, const int numToRead) const;
+	const std::string m_trainingImagesFilename, m_trainingLabelsFilename;
+	const std::string m_testImagesFilename, m_testLabelsFilename;
 
 	template <typename PrimitiveType> PrimitiveType ReadPrimitive(std::istream& is,
 		const byte_order::EndianessConverter& converter) const {

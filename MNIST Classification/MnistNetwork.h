@@ -1,9 +1,10 @@
 #pragma once
-#include <tiny_dnn/tiny_dnn.h>
+#include <tiny_dnn\optimizers\optimizer.h>
+#include <tiny_dnn\network.h>
 #include "MnistNetworkInterface.h"
-#include "BackupAble.h"
+#include "BackupInterface.h"
 
-class MnistNetwork : public MnistNetworkInterface, public BackupAble {
+class MnistNetwork : public IMnistNetwork {
 public:
 	explicit MnistNetwork(const size_t numRows, const size_t numCols);
 	explicit MnistNetwork();
