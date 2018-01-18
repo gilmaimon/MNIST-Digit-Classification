@@ -13,10 +13,25 @@ public:
 	void Close() override;
 	void Display() final override;
 
+	float GetWidth() const {
+		return m_renderWindow.getSize().x;
+	}
+
+	float GetHeight() const {
+		return m_renderWindow.getSize().y;
+	}
+
 	bool HandleEvent() override {
 		sf::Event event;
 		const auto result = m_renderWindow.pollEvent(event);
-		HandleSfmlEvent(event);
+		
+		if (event.type != sf::Event::Closed) {
+			HandleSfmlEvent(event);
+		}
+		else {
+			m_renderWindow.close();
+		}
+		
 		return result;
 	}
 

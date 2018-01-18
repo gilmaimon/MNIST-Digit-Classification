@@ -1,12 +1,11 @@
 #include "MnistWindow.h"
 #include <cassert>
 #include <SFML/Graphics.hpp>
-#include "GridWindow.h"
+#include "SfmlGridWindow.h"
 
 MnistWindow::MnistWindow(const float width, const float height,
 	const std::string windowTitle, MnistDataItem item) : 
 	SfmlWindow(width, height, windowTitle), m_dataItem(std::move(item)), m_width(width), m_height(height) {
-	
 }
 
 void MnistWindow::SetDataItem(MnistDataItem item) {
@@ -22,7 +21,7 @@ void MnistWindow::Draw() {
 void MnistWindow::DrawMnistImage() {
 	assert(m_dataItem.imageData.size() == g_mnistImageSize * g_mnistImageSize);
 
-	GridWindow gridWindow{ m_width / g_mnistImageSize, m_height / g_mnistImageSize, g_mnistImageSize, g_mnistImageSize };
+	SfmlGridWindow gridWindow{ m_width, m_height, g_mnistImageSize, g_mnistImageSize };
 	for (size_t row = 0; row < g_mnistImageSize; row++) {
 		for (size_t col = 0; col < g_mnistImageSize; col++) {
 			const uint8_t alphaColor = m_dataItem.imageData[row * g_mnistImageSize + col];

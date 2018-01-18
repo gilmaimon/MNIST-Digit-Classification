@@ -10,7 +10,7 @@ class MnistWindow : public SfmlWindow, public IMnistWindow {
 public:
 	explicit MnistWindow(const float width, const float height, const std::string windowTitle, MnistDataItem item);
 
-	void SetDataItem(MnistDataItem item);
+	void SetDataItem(MnistDataItem item) override;
 
 	void Draw() override;
 	virtual ~MnistWindow() = default;

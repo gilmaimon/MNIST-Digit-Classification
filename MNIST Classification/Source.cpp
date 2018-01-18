@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include <cassert>
 #include <memory>
 #include "MnistCommon.h"
@@ -12,9 +11,9 @@
 #define LITTLE_ENDIAN
 #include "ByteOrder.h"
 
-std::unique_ptr<MnistWindow> CreateMnistTestWindow(const MnistDataItem dataItem = MnistDataItem{}) {
-	std::unique_ptr<MnistWindow> result =
-		std::make_unique<MnistWindow>(600, 600, "Mnist", dataItem);
+std::shared_ptr<MnistWindow> CreateMnistTestWindow(const MnistDataItem dataItem = MnistDataItem{}) {
+	std::shared_ptr<MnistWindow> result =
+		std::make_shared<MnistWindow>(600, 600, "Mnist", dataItem);
 
 	return result;
 }
@@ -63,25 +62,27 @@ void LoadNetworkAndPrintSucessRate(std::shared_ptr<IMnistDatasetReader> mnistDat
 
 }
 
-int main() {
-	const byte_order::EndianessConverter currentConverter(byte_order::ByteOrder_BigEndian);
-	std::shared_ptr<IMnistDatasetReader> mnistDatasetReader = std::make_shared<MnistDatasetReader>(
-		g_trainingImagesFilename, g_trainingLablesFilename,
-		g_testgImagesFilename, g_testgLabelsFilename,
-		currentConverter
-	);
+void ShowTestImagesAndPredictLables(const MnistDataSet& testDataset, const std::shared_ptr<IMnistAiModel> mnistNetwork) {
 	
+	auto mnistWindow = CreateMnistTestWindow();
+	for (auto i = 0; i < 50; i++) {
+		for (const auto& item : testDataset.trainDataItems) {
+			DisplayMnistItem(mnistWindow, item);
+			const char predicted = mnistNetwork->Predict(item);
 
-	//LoadTrainingDataAndBackupNetwork(mnistDatasetReader, 2);
-	//LoadNetworkAndPrintSucessRate(mnistDatasetReader);
-	
-	std::unique_ptr<IInteractiveDataDrawingWindow> drawingWindow = std::make_unique<DrawableGreyscaleWindow>();
+			std::cout << "Predicted: " << predicted << std::endl;
 
-	std::unique_ptr<IMnistNetwork> mnistNetwork = std::make_unique<MnistNetwork>();
-	mnistNetwork->LoadFromFile(g_networkBackupFilename);
+			getchar();
+		}
+	}
+}
+
+void StartInteractiveDrawingPrediction(const std::shared_ptr<IMnistAiModel> mnistNetwork) {
+	auto drawingWindow = std::make_unique<DrawableGreyscaleWindow>(450.0, 450.0, "Draw Here!", 28, 28);
+	drawingWindow->SetBrushSize(2);
 
 	char lastPrediction = '\0';
-	while(drawingWindow->IsOpen()) {
+	while (drawingWindow->IsOpen()) {
 		drawingWindow->HandleEvent();
 		drawingWindow->Draw();
 		drawingWindow->Display();
@@ -89,30 +90,31 @@ int main() {
 		const auto pixels = drawingWindow->FlatternToPixels();
 		const char newPrediction = mnistNetwork->Predict(pixels);
 
-		if(newPrediction != lastPrediction) {
+		if (newPrediction != lastPrediction) {
 			lastPrediction = newPrediction;
 			std::cout << "Predicted: " << newPrediction << std::endl;
 		}
 	}
+}
+
+int main() {
+	const byte_order::EndianessConverter currentConverter(byte_order::ByteOrder_BigEndian);
+	std::shared_ptr<IMnistDatasetReader> mnistDatasetReader = std::make_shared<MnistDatasetReader>(
+		g_trainingImagesFilename, g_trainingLablesFilename,
+		g_testgImagesFilename, g_testgLabelsFilename,
+		currentConverter
+	);
+
+	const std::shared_ptr<IMnistAiModel> mnistNetwork = std::make_shared<MnistNetwork>();
+	mnistNetwork->LoadFromFile(g_networkBackupFilename);
+
+	
+	const auto testDataset = mnistDatasetReader->ReadTestDataset();	
+	ShowTestImagesAndPredictLables(testDataset, mnistNetwork);
+	
+
+	StartInteractiveDrawingPrediction(mnistNetwork);
 
 	getchar();
 	return 0;
-
-	/*
-	
-	auto testDataset = mnistDatasetReader->ReadTestDataset();
-	std::shared_ptr<IMnistWindow> window = CreateMnistTestWindow();
-
-	for (auto i = 0; i < 50; i++) {
-		for (const auto& item : testDataset.trainDataItems) {
-			DisplayMnistItem(window, item);
-			const char predicted = mnistNetwork->Predict(item);
-
-			std::cout << "Predicted: " << predicted << std::endl;
-			getchar();
-		}
-	}
-
-	*/
-
 }

@@ -4,4 +4,5 @@
 
 struct IInteractiveDataDrawingWindow : public virtual IWindow, public IFlatternToPixels {
 	virtual ~IInteractiveDataDrawingWindow() = default;
+	virtual void SetBrushSize(const size_t brushSize) = 0;
 };

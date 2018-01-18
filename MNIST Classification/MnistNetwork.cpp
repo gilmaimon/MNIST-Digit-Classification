@@ -1,5 +1,5 @@
 #include "MnistNetwork.h"
-#include <tiny_dnn\tiny_dnn.h>
+#include <tiny_dnn/tiny_dnn.h>
 
 MnistNetwork::MnistNetwork(const size_t numRows, const size_t numCols) {
 	InitMnistNetwork(numRows, numCols);
@@ -16,16 +16,16 @@ void MnistNetwork::Train(const MnistDataItem& item) {
 }
 
 void MnistNetwork::Train(const MnistDataSet& items) {
-	for (auto& item : items.trainDataItems) {
-		Train(item);
+	for (auto& trainingDataItem : items.trainDataItems) {
+		Train(trainingDataItem);
 	}
 }
 
 float MnistNetwork::SucessRate(const MnistDataSet& items) {
 	size_t successfulPredictions = 0;
 
-	for (auto& item : items.trainDataItems) {
-		if (Predict(item) == static_cast<char>('0' + item.label)) {
+	for (auto& itemToPredict : items.trainDataItems) {
+		if (Predict(itemToPredict) == static_cast<char>('0' + itemToPredict.label)) {
 			++successfulPredictions;
 		}
 	}
@@ -51,11 +51,6 @@ void MnistNetwork::SaveToFile(const std::string filename) {
 void MnistNetwork::LoadFromFile(const std::string filename) {
 	m_network.load(filename);
 }
-
-#include <tiny_dnn\layers\convolutional_layer.h>
-#include <tiny_dnn\layers\average_pooling_layer.h>
-#include <tiny_dnn\layers\fully_connected_layer.h>
-#include <tiny_dnn\activations\tanh_layer.h>
 
 void MnistNetwork::InitMnistNetwork(const size_t numRows, const size_t numCols) {
 	using namespace tiny_dnn;

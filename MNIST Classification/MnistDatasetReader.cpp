@@ -1,20 +1,21 @@
 #include "MnistDatasetReader.h"
+#include "MnistWindow.h"
 
 MnistDataSet MnistDatasetReader::ReadFromFiles(const std::string imagesFilename, const std::string labelsFilename,
                                                const int numToRead) const {
 	//Read Images
 	std::fstream imagesInputFile{imagesFilename, std::ios::binary | std::ios::in};
-	std::vector<PixelsVector> images = ReadImagesFile(imagesInputFile, m_converter, numToRead);
+	std::vector<PixelsVector> images = ReadImagesFile(imagesInputFile, m_endianessconverter, numToRead);
 
 	//Read Labels
 	std::fstream labelsInputFile{labelsFilename, std::ios::binary | std::ios::in};
-	std::vector<Label> labels = ReadLabelsFile(labelsInputFile, m_converter, numToRead);
+	std::vector<Label> labels = ReadLabelsFile(labelsInputFile, m_endianessconverter, numToRead);
 
 	assert(images.size() == labels.size());
 
-	//TODO i'm using 28 cause im lazy and mnist is kinda always 28x28 so its kinda legit..
+	//TODO i'm using 28 as global const cause im lazy and mnist is kinda always 28x28 so its kinda legit..
 	MnistDataSet resultDataSet;
-	resultDataSet.numRows = resultDataSet.numCols = 28;
+	resultDataSet.numRows = resultDataSet.numCols = g_mnistImageSize;
 
 	for (size_t i = 0; i < images.size(); i++) {
 		MnistDataItem item;
@@ -28,9 +29,9 @@ MnistDataSet MnistDatasetReader::ReadFromFiles(const std::string imagesFilename,
 
 MnistDatasetReader::MnistDatasetReader(const std::string trainingImagesFilename, const std::string trainingLabelsFilename,
 	const std::string testImagesFilename, const std::string testLabelsFilename, const byte_order::EndianessConverter& converter) 
-	: m_converter(converter), m_trainingImagesFilename(trainingImagesFilename),
-	m_testImagesFilename(testImagesFilename), m_trainingLabelsFilename(g_trainingLablesFilename),
-	m_testLabelsFilename(testLabelsFilename) {
+	: m_endianessconverter(converter), 
+	m_trainingImagesFilename(trainingImagesFilename), m_trainingLabelsFilename(trainingLabelsFilename),
+	m_testImagesFilename(testImagesFilename), m_testLabelsFilename(testLabelsFilename) {
 
 }
 
@@ -62,6 +63,7 @@ std::vector<Label> MnistDatasetReader::ReadLabelsFile(std::istream& labelsInputF
                                                       const byte_order::EndianessConverter& currentConverter,
                                                       const int numToRead) const {
 	const auto magicNumber = ReadPrimitive<uint32_t>(labelsInputFile, currentConverter);
+	
 	const auto numLabels = ReadPrimitive<uint32_t>(labelsInputFile, currentConverter);
 
 	std::vector<Label> allLabels;

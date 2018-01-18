@@ -18,6 +18,33 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BackupAble.h" />
+    <ClInclude Include="BackupInterface.h" />
+    <ClInclude Include="ByteOrder.h" />
+    <ClInclude Include="DrawableGreyscaleWindow.h" />
+    <ClInclude Include="FlatternToPixelsInterface.h" />
+    <ClInclude Include="SfmlGridWindow.h" />
+    <ClInclude Include="InteractiveDrawingWindowInterface.h" />
+    <ClInclude Include="MnistCommon.h" />
+    <ClInclude Include="MnistDatasetReader.h" />
+    <ClInclude Include="MnistDatasetReaderInterface.h" />
+    <ClInclude Include="MnistNetwork.h" />
+    <ClInclude Include="MnistAiModelInterface.h" />
+    <ClInclude Include="MnistWindow.h" />
+    <ClInclude Include="MnistWindowInterface.h" />
+    <ClInclude Include="SfmlWindow.h" />
+    <ClInclude Include="WindowInterface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DrawableGreyscaleWindow.cpp" />
+    <ClCompile Include="SfmlGridWindow.cpp" />
+    <ClCompile Include="MnistDatasetReader.cpp" />
+    <ClCompile Include="MnistNetwork.cpp" />
+    <ClCompile Include="MnistWindow.cpp" />
+    <ClCompile Include="SfmlWindow.cpp" />
+    <ClCompile Include="Source.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9BFCC62D-47D6-4E1D-B649-F0DF478BD35B}</ProjectGuid>
@@ -116,28 +143,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DrawableGreyscaleWindow.cpp" />
-    <ClCompile Include="GridWindow.cpp" />
-    <ClCompile Include="MnistDatasetReader.cpp" />
-    <ClCompile Include="MnistNetwork.cpp" />
-    <ClCompile Include="MnistWindow.cpp" />
-    <ClCompile Include="SfmlWindow.cpp" />
-    <ClCompile Include="Source.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BackupAble.h" />
-    <ClInclude Include="ByteOrder.h" />
-    <ClInclude Include="DrawableGreyscaleWindow.h" />
-    <ClInclude Include="GridWindow.h" />
-    <ClInclude Include="MnistCommon.h" />
-    <ClInclude Include="MnistDatasetReader.h" />
-    <ClInclude Include="MnistNetwork.h" />
-    <ClInclude Include="MnistNetworkInterface.h" />
-    <ClInclude Include="MnistWindow.h" />
-    <ClInclude Include="SfmlWindow.h" />
-    <ClInclude Include="WindowInterface.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

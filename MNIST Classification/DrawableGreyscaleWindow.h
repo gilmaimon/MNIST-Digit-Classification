@@ -1,17 +1,18 @@
 #pragma once
-#include <SFML/Graphics/Color.hpp>
-#include <algorithm>
-#include "GridWindow.h"
+#include "SfmlGridWindow.h"
 #include "MnistWindow.h"
 #include "InteractiveDrawingWindowInterface.h"
 
 class DrawableGreyscaleWindow : public IInteractiveDataDrawingWindow, public SfmlWindow {
 public:
-	DrawableGreyscaleWindow();
+	typedef float DimentionType;
+
+	DrawableGreyscaleWindow(const DimentionType width, const DimentionType height,
+		const std::string windowTitle, const size_t numRows, const size_t numCols);
 
 	virtual void Draw() override;
-
-	PixelsVector FlatternToPixels() const;
+	PixelsVector FlatternToPixels() const override;
+	void SetBrushSize(const size_t brushSize) override;
 
 	virtual ~DrawableGreyscaleWindow() override = default;
 protected:
@@ -24,9 +25,10 @@ private:
 		MouseDownState_None
 	};
 
-	static const float WindowSize;
-	GridWindow m_gridWindow;
-	MouseDownState m_mouseDown = MouseDownState_None;
+	SfmlGridWindow m_gridWindow;
+	MouseDownState m_mouseDownState = MouseDownState_None;
+	size_t m_countCols, m_countRows;
+	size_t m_brushSize;
 
 	void OnCellClicked(const size_t rowIndex, const size_t colIndex);
 	MouseDownState UpdateMouseStateFromEvent(const sf::Event event);
@@ -35,6 +37,6 @@ private:
 		int row;
 		int col;
 	};
-	TablePosition MapWindowPositionToGridIndex(TablePosition screenPosition);
-	void PaintCircleOnGridIndex(TablePosition paintTargetPosition, size_t brushSize);
+	TablePosition MapWindowPositionToGridIndex(TablePosition screenPosition) const;
+	void PaintCircleOnGridIndex(TablePosition paintTargetPosition);
 };

@@ -1,11 +1,11 @@
 #include "DrawableGreyscaleWindow.h"
 
-const float DrawableGreyscaleWindow::WindowSize = 500.0;
-
-DrawableGreyscaleWindow::DrawableGreyscaleWindow():
-	m_mouseDown(MouseDownState_None),
-	SfmlWindow(WindowSize, WindowSize, "Draw Something!"),
-	m_gridWindow(WindowSize / g_mnistImageSize, WindowSize / g_mnistImageSize, g_mnistImageSize, g_mnistImageSize) { }
+DrawableGreyscaleWindow::DrawableGreyscaleWindow(const DimentionType width, const DimentionType height,
+	const std::string windowTitle, const size_t numRows, const size_t numCols) :
+	SfmlWindow(width, height, windowTitle),
+	m_gridWindow(width, height, numCols, numRows),
+	m_mouseDownState(MouseDownState_None),
+	m_countCols(numCols), m_countRows(numRows), m_brushSize(2) { }
 
 void DrawableGreyscaleWindow::Draw() {
 	SfmlWindow::Draw();
@@ -14,8 +14,8 @@ void DrawableGreyscaleWindow::Draw() {
 
 PixelsVector DrawableGreyscaleWindow::FlatternToPixels() const {
 	PixelsVector result;
-	for (size_t iRow = 0; iRow < g_mnistImageSize; iRow++) {
-		for (size_t iCol = 0; iCol < g_mnistImageSize; iCol++) {
+	for (size_t iRow = 0; iRow < m_countRows; iRow++) {
+		for (size_t iCol = 0; iCol < m_countCols; iCol++) {
 			float greyScaleValue = m_gridWindow(iRow, iCol).getFillColor().r;
 			result.push_back(greyScaleValue);
 		}
@@ -23,14 +23,18 @@ PixelsVector DrawableGreyscaleWindow::FlatternToPixels() const {
 	return result;
 }
 
+void DrawableGreyscaleWindow::SetBrushSize(const size_t brushSize) {
+	m_brushSize = brushSize;
+}
+
 bool DrawableGreyscaleWindow::HandleSfmlEvent(const sf::Event coughtEvent) {
 	UpdateMouseStateFromEvent(coughtEvent);
 
-	if (m_mouseDown == MouseDownState_None) return false;
+	if (m_mouseDownState == MouseDownState_None) return false;
 	
 	const auto mousePosition = sf::Mouse::getPosition(m_renderWindow);
 	const auto mappedGridPosition = MapWindowPositionToGridIndex({ mousePosition.y, mousePosition.x });	
-	PaintCircleOnGridIndex(mappedGridPosition, 2);
+	PaintCircleOnGridIndex(mappedGridPosition);
 
 	return true;
 }
@@ -40,7 +44,7 @@ void DrawableGreyscaleWindow::OnCellClicked(const size_t rowIndex, const size_t 
 	static const size_t LeftClickColorIncrement = 5;
 	static const size_t RightClickColorDecrement = 10;
 
-	switch (m_mouseDown) {
+	switch (m_mouseDownState) {
 	case MouseDownState_Left:
 		//In case of left click on a cell, brighten the color up to the max value which is 255
 		greyscaleColor = std::min(greyscaleColor + LeftClickColorIncrement, 255.0);
@@ -72,37 +76,39 @@ void DrawableGreyscaleWindow::OnCellClicked(const size_t rowIndex, const size_t 
 DrawableGreyscaleWindow::MouseDownState DrawableGreyscaleWindow::UpdateMouseStateFromEvent(const sf::Event event) {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Button::Left) {
-			m_mouseDown = MouseDownState_Left;
+			m_mouseDownState = MouseDownState_Left;
 		}
 		else {
-			m_mouseDown = MouseDownState_Right;
+			m_mouseDownState = MouseDownState_Right;
 		}
 	}
 	else if (event.type == sf::Event::MouseButtonReleased) {
-		m_mouseDown = MouseDownState_None;
+		m_mouseDownState = MouseDownState_None;
 	}
-	return m_mouseDown;
+	return m_mouseDownState;
 }
 
-DrawableGreyscaleWindow::TablePosition DrawableGreyscaleWindow::MapWindowPositionToGridIndex(TablePosition screenPosition)
-{
-	const float distanceDelta = WindowSize / g_mnistImageSize;
+DrawableGreyscaleWindow::TablePosition DrawableGreyscaleWindow::MapWindowPositionToGridIndex(const TablePosition screenPosition) const {
+	const auto colsDistanceDelta = GetWidth() / g_mnistImageSize;
+	const int colIndex = screenPosition.col / colsDistanceDelta;
 
-	const int rowIndex = screenPosition.row / distanceDelta;
-	const int colIndex = screenPosition.col / distanceDelta;
+	const auto rowsDistanceDelta = GetHeight() / g_mnistImageSize;
+	const int rowIndex = screenPosition.row / rowsDistanceDelta;
+
 	return { rowIndex, colIndex };
 }
 
-void DrawableGreyscaleWindow::PaintCircleOnGridIndex(TablePosition paintTargetPosition, size_t brushSize)
+void DrawableGreyscaleWindow::PaintCircleOnGridIndex(const TablePosition centerPosition)
 {
-	const size_t brushStartRow = std::max(0, paintTargetPosition.row - static_cast<int>(brushSize));
-	const size_t brushEndRow = std::min(g_mnistImageSize - 1, paintTargetPosition.row + static_cast<int>(brushSize));
+	//Comupte brush starting row, without going out of bounds
+	const int brushStartRow = centerPosition.row - static_cast<int>(m_brushSize);
+	const int brushEndRow = centerPosition.row + static_cast<int>(m_brushSize);
 
-	const int brushStartCol = paintTargetPosition.col - brushSize;
-	const int brushEndCol = paintTargetPosition.col + brushSize;
+	const int brushStartCol = centerPosition.col - static_cast<int>(m_brushSize);
+	const int brushEndCol = centerPosition.col + static_cast<int>(m_brushSize);
 
 	for (int iCol = brushStartCol; iCol <= brushEndCol; iCol++) {
-		const int rowsIncrement = abs(paintTargetPosition.col - iCol);
+		const int rowsIncrement = abs(centerPosition.col - iCol);
 		for (int iRow = brushStartRow + rowsIncrement; iRow <= brushEndRow - rowsIncrement; iRow++) {
 			if (iRow < 0 || iRow > g_mnistImageSize - 1 || iCol < 0 || iCol > g_mnistImageSize - 1) continue;
 			OnCellClicked(iRow, iCol);
